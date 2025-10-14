@@ -1,0 +1,29 @@
+# Hệ Thống Điều Khiển Máy Tính Bằng Cử Chỉ Tay
+# Dependencies cho Python 3.7+
+
+# Computer Vision và MediaPipe
+opencv-python==4.11.0.86
+mediapipe==0.10.21
+
+# Machine Learning
+tensorflow==2.19.0
+scikit-learn==1.6.1
+numpy==1.26.4
+
+# GUI và Automation
+pyautogui==0.9.54
+
+# Data Visualization
+matplotlib==3.10.0
+seaborn==0.13.2
+
+# Utilities
+pandas>=1.3.0
+Pillow>=8.0.0
+
+# Optional: GPU support
+# tensorflow-gpu==2.19.0  # Uncomment nếu có GPU CUDA
+
+# Development (optional)
+# jupyter>=1.0.0
+# ipykernel>=6.0.0
