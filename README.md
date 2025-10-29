@@ -245,5 +245,7 @@ Việc sử dụng MediaPipe cho phát hiện tay và LSTM cho nhận diện c�
 ---
 
 **Tác giả**: Trần Văn Hoàng 
+
 **Ngày tạo**: 14/10/2025 
+
 **Phiên bản**: 1.0  

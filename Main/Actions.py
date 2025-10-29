@@ -4,71 +4,88 @@ import pyautogui
 import time
 from Model import GESTURE_TYPES  # Import GESTURE_TYPES từ model.py
 # Gộp config actions
-SCROLL_SENSITIVITY = 3.0  # Tăng cho mượt touchpad-like
-SMOOTH_ALPHA = 0.5  # 0.5: 50% smooth; set 1.0 cho zero smooth (raw tay pos)
-TAB_THRESHOLD = 0.05  # Threshold cho delta_x ở tab (tránh nhiễu)
-DISCRETE_DELAY = 0.2
-
+SCROLL_AMOUNT = 100  
+SMOOTH_ALPHA = 0.5  
+DISCRETE_COOLDOWN = 1.0 
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0.01
+
+# Tracking last execution time cho từng gesture (cooldown)
+last_execution_times = {}
 
 def execute_right_click():
     pyautogui.rightClick()
     print("Executed: Right click!")
+    return False  # Không dừng chương trình
 
 def execute_left_click():
     pyautogui.leftClick()
     print("Executed: Left click!")
+    return False  # Không dừng chương trình
 
 def execute_stop_program():
     print("Executed: Dừng chương trình! (Thoát)")
-    return True
+    return False
 
-def execute_open_chrome():
+def execute_open_app():
+    """Mở app, không dừng chương trình, nhưng chống spam bằng cooldown riêng."""
+    global last_execution_times
+    app_label = 'moapp'
+    current_time = time.time()
+    # Cooldown riêng cho mở app (5 giây)
+    APP_COOLDOWN = 5.0
+    if app_label in last_execution_times:
+        time_since_last = current_time - last_execution_times[app_label]
+        if time_since_last < APP_COOLDOWN:
+            print(f"Skip mở app: Cooldown còn {APP_COOLDOWN - time_since_last:.2f}s")
+            return False
     pyautogui.hotkey('win', 'r')
-    time.sleep(0.3)
-    pyautogui.write('chrome')
-    time.sleep(0.1)
+    time.sleep(0.5)  # Đợi Run dialog mở
+    pyautogui.write('"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Coc Coc.lnk"')
     pyautogui.press('enter')
-    print("Executed: Mở Chrome!")
+    print("Executed: Mở Coc Coc!")
+    last_execution_times[app_label] = current_time
+    return False  # Không dừng chương trình
 
 def execute_zoom_in():
     pyautogui.hotkey('ctrl', '+')
     print("Executed: Phóng to!")
+    return False
 
 def execute_zoom_out():
     pyautogui.hotkey('ctrl', '-')
     print("Executed: Thu nhỏ!")
+    return False
 
-def execute_tab_next(delta_x):
-    if abs(delta_x) > TAB_THRESHOLD:
-        pyautogui.hotkey('ctrl', 'tab')
-        print(f"Executed: Tab next (delta_x: {delta_x:.2f})")
-    else:
-        print("Skip tab next: delta_x too small.")
+def execute_tab_next():
+    """Chuyển tab tiếp theo (Ctrl+Tab)."""
+    pyautogui.hotkey('ctrl', 'tab')
+    print("Executed: Tab next (Ctrl+Tab)")
+    return False
 
-def execute_tab_prev(delta_x):
-    if abs(delta_x) > TAB_THRESHOLD:
-        pyautogui.hotkey('ctrl', 'shift', 'tab')
-        print(f"Executed: Tab prev (delta_x: {delta_x:.2f})")
-    else:
-        print("Skip tab prev: delta_x too small.")
+def execute_tab_prev():
+    """Chuyển tab trước đó (Ctrl+Shift+Tab)."""
+    pyautogui.hotkey('ctrl', 'shift', 'tab')
+    print("Executed: Tab prev (Ctrl+Shift+Tab)")
+    return False
 
-def execute_scroll_up(delta_y, num_fingers):
-    if num_fingers >= 2:
-        scroll_amount = int(-delta_y * SCROLL_SENSITIVITY)
-        pyautogui.scroll(scroll_amount)
-        print(f"Executed: 2-finger scroll up {scroll_amount} (delta_y: {delta_y:.2f}, fingers: {num_fingers})")
-    else:
-        print("Skip scroll: <2 fingers detected.")
+def execute_scroll_up():
+    """Scroll LÊN trong tab/trang hiện tại (như vuốt lên trên touchpad)."""
+    # Thực hiện scroll nhiều lần cho mượt
+    for _ in range(3):
+        pyautogui.scroll(SCROLL_AMOUNT)
+        time.sleep(0.01)
+    print(f"Executed: Scroll UP {SCROLL_AMOUNT * 3} (vuốt lên trong trang)")
+    return False
 
-def execute_scroll_down(delta_y, num_fingers):
-    if num_fingers >= 2:
-        scroll_amount = int(-delta_y * SCROLL_SENSITIVITY)
-        pyautogui.scroll(scroll_amount)
-        print(f"Executed: 2-finger scroll down {scroll_amount} (delta_y: {delta_y:.2f}, fingers: {num_fingers})")
-    else:
-        print("Skip scroll: <2 fingers detected.")
+def execute_scroll_down():
+    """Scroll XUỐNG trong tab/trang hiện tại (như vuốt xuống trên touchpad)."""
+    # Thực hiện scroll nhiều lần cho mượt
+    for _ in range(3):
+        pyautogui.scroll(-SCROLL_AMOUNT)
+        time.sleep(0.01)
+    print(f"Executed: Scroll DOWN {SCROLL_AMOUNT * 3} (vuốt xuống trong trang)")
+    return False
 
 def execute_mouse_action(curr_x_norm, curr_y_norm, previous_mouse_pos, hand_idx):
     """
@@ -95,7 +112,7 @@ def get_action_func(pred_label):
         'clickchuotphai': execute_right_click,
         'clickchuottrai': execute_left_click,
         'dungchuongtrinh': execute_stop_program,
-        'mochorme': execute_open_chrome,
+        'moapp': execute_open_app,
         'phongto': execute_zoom_in,
         'thunho': execute_zoom_out,
         'vuotlen': execute_scroll_up,
@@ -105,22 +122,23 @@ def get_action_func(pred_label):
     }
     return action_map.get(pred_label)
 
-def execute_action(execute_func, pred_label, delta_x, delta_y, num_fingers, last_discrete_time, current_time):
+def execute_action(execute_func, pred_label, current_time):
     """
-    Execute action dựa trên loại gesture.
+    Execute action với cooldown (TẤT CẢ là discrete trừ dichuyenchuot).
     Returns: should_stop (bool)
     """
-    gesture_type = GESTURE_TYPES.get(pred_label, 'discrete')
-    if pred_label == 'dichuyenchuot':
-        # Mouse xử lý riêng, không dùng execute_func
-        return False
-    elif gesture_type == 'continuous':
-        if pred_label in ['vuotlen', 'vuotxuong']:
-            execute_func(delta_y, num_fingers)
-        elif pred_label in ['vuotphai', 'vuottrai']:
-            execute_func(delta_x)
-    else:  # Discrete
-        if current_time - last_discrete_time >= DISCRETE_DELAY:
-            should_stop = execute_func()
-            return should_stop
-    return False
+    global last_execution_times
+    
+    if pred_label in last_execution_times:
+        time_since_last = current_time - last_execution_times[pred_label]
+        if time_since_last < DISCRETE_COOLDOWN:
+            return False
+    
+    # Execute action
+    should_stop = execute_func()
+    
+    # Cập nhật thời gian execute cuối
+    last_execution_times[pred_label] = current_time
+    
+    # Return True nếu cần dừng chương trình
+    return should_stop if should_stop else False

@@ -1,2 +1,4 @@
 /videotrain
 /Dataset/**
+dataset/
+*.h5

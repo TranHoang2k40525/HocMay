@@ -68,7 +68,7 @@ while cap.isOpened() and not should_stop:
                     delta_x = curr_x - prev_x
                     delta_y = curr_y - prev_y
                     num_fingers = hand_fingers[hand_idx]
-                    should_stop = execute_action(execute_func, pred_label, delta_x, delta_y, num_fingers, last_discrete_time, current_time)
+                    should_stop = execute_action(execute_func, pred_label, current_time)
                     previous_centers[hand_idx] = (curr_x, curr_y)
             else:
                 previous_centers = hand_centers[:]
@@ -76,7 +76,7 @@ while cap.isOpened() and not should_stop:
                     previous_centers.append((0, 0))
                 previous_mouse_pos = [None, None]
         else:
-            should_stop = execute_action(execute_func, pred_label, 0, 0, 0, last_discrete_time, current_time)
+            should_stop = execute_action(execute_func, pred_label, current_time)
             last_discrete_time = current_time
         
         if current_time - last_log_time >= 1.0 and pred_label != last_action:

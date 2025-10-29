@@ -11,19 +11,19 @@ CONF_THRESHOLD = 0.5
 
 LABEL_ENCODER = np.array([
     'clickchuotphai', 'clickchuottrai', 'dichuyenchuot', 'dungchuongtrinh',
-    'mochorme', 'phongto', 'thunho', 'vuotlen', 'vuotphai', 'vuottrai', 'vuotxuong'
+    'moapp', 'phongto', 'thunho', 'vuotlen', 'vuotphai', 'vuottrai', 'vuotxuong'
 ])
 
 GESTURE_TYPES = {
-    'dichuyenchuot': 'continuous',
-    'vuotlen': 'continuous',
-    'vuotxuong': 'continuous',
-    'vuotphai': 'continuous',
-    'vuottrai': 'continuous',
+    'dichuyenchuot': 'continuous', 
+    'vuotlen': 'discrete',
+    'vuotxuong': 'discrete',
+    'vuotphai': 'discrete',
+    'vuottrai': 'discrete',
     'clickchuotphai': 'discrete',
     'clickchuottrai': 'discrete',
     'dungchuongtrinh': 'discrete',
-    'mochorme': 'discrete',
+    'moapp': 'discrete',
     'phongto': 'discrete',
     'thunho': 'discrete'
 }
