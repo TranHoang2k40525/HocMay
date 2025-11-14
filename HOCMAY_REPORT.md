@@ -1,7 +1,7 @@
 **Tổng Quan**
 - **Mục đích**: Tài liệu này mô tả hoạt động, luồng dữ liệu, phân tích và đánh giá của dự án điều khiển máy tính bằng cử chỉ (Webcam + MediaPipe + LSTM) và điều khiển bằng giọng nói (Google Speech + LSTM Intent).
 
-- 
+  
 **Sơ Đồ Hoạt Động (Tóm tắt)**
 
 **Sơ Đồ**
